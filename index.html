@@ -194,6 +194,12 @@
   .p-sur{background:var(--watch-bg);color:var(--watch);} .p-con{background:var(--keep-bg);color:var(--keep);}
   .empty{color:var(--muted);font-size:13.5px;padding:26px 6px;text-align:center;}
   .export{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px;}
+  .sharebar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:14px;padding:14px 18px;background:linear-gradient(90deg,var(--keep-bg),var(--paper));border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:12px;}
+  .sharebar-l{font-family:var(--serif);font-weight:600;color:var(--ink);font-size:15px;margin-right:6px;}
+  .sh{font-weight:700;font-size:13px;border-radius:9px;padding:10px 15px;color:#fff;display:inline-flex;align-items:center;gap:7px;}
+  .sh:hover{filter:brightness(1.08);transform:translateY(-1px);}
+  .sh-x{background:#111;} .sh-in{background:#0a66c2;} .sh-wa{background:#25d366;color:#06301a;} .sh-copy{background:#eef0ea;color:var(--pine);}
+  .sh-msg{font-size:12.5px;color:var(--pine);margin-top:9px;min-height:15px;font-weight:600;}
 
   .sreveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1);}
   .sreveal.in{opacity:1;transform:none;}
@@ -408,8 +414,15 @@
     <div class="export">
       <button class="btn-ghost" onclick="window.print()">Imprimer / PDF</button>
       <button class="btn-ghost" id="dlResults">Telecharger le detail (CSV)</button>
-      <button class="btn-ghost" id="shareBtn">Partager mon resultat</button>
     </div>
+    <div class="sharebar">
+      <span class="sharebar-l">&#128226; Partagez votre resultat :</span>
+      <button class="sh sh-x" data-net="x">X</button>
+      <button class="sh sh-in" data-net="linkedin">LinkedIn</button>
+      <button class="sh sh-wa" data-net="whatsapp">WhatsApp</button>
+      <button class="sh sh-copy" data-net="copy">Copier texte + lien</button>
+    </div>
+    <div class="sh-msg" id="shMsg"></div>
   </div>
 
   <!-- CAPTURE -->
@@ -676,16 +689,20 @@
   function clearGrid(){grid.innerHTML='';createRow({});hideExBanner();render();}
   $('#clearAll').addEventListener('click',clearGrid);
   $('#exClear').addEventListener('click',clearGrid);
-  $('#shareBtn').addEventListener('click',function(){
+  function shareText(){
     var t=window.FBA.totals||{},av=[];
     if(t.USD&&t.USD.av>0)av.push(fmtMoney(t.USD.av,'USD'));
     if(t.EUR&&t.EUR.av>0)av.push(fmtMoney(t.EUR.av,'EUR'));
     var amt=av.join(' + ');
-    var msg=amt?('Je peux eviter '+amt+' de frais de stockage FBA ce trimestre. Calcule les tiens (gratuit, dans ton navigateur) :'):('Calcule tes frais de stockage FBA evitables avant le 1er octobre (gratuit) :');
-    var url='https://getcubed.netlify.app';var b=this;
-    if(navigator.share){navigator.share({title:'Cubed',text:msg,url:url}).catch(function(){});}
-    else if(navigator.clipboard){navigator.clipboard.writeText(msg+' '+url).then(function(){var o=b.textContent;b.textContent='Copie ! Collez-le ou vous voulez';setTimeout(function(){b.textContent=o;},2000);});}
-  });
+    return amt?('Je peux eviter '+amt+' de frais de stockage FBA ce trimestre. Calcule les tiens (gratuit, dans ton navigateur) :'):('Calcule tes frais de stockage FBA evitables avant le 1er octobre (gratuit) :');
+  }
+  document.querySelectorAll('.sh').forEach(function(b){b.addEventListener('click',function(){
+    var net=b.getAttribute('data-net'),url='https://getcubed.netlify.app',msg=shareText(),full=msg+' '+url,sm=$('#shMsg');sm.textContent='';
+    if(net==='x'){window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(msg+' ')+'&url='+encodeURIComponent(url)+'&hashtags=AmazonFBA,FBA','_blank','width=600,height=540');}
+    else if(net==='whatsapp'){window.open('https://wa.me/?text='+encodeURIComponent(full),'_blank');}
+    else if(net==='linkedin'){if(navigator.clipboard)navigator.clipboard.writeText(full);window.open('https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(url),'_blank','width=620,height=580');sm.textContent='LinkedIn ne pre-remplit plus le texte : on l\'a copie pour vous, collez-le (Ctrl+V) dans le post.';}
+    else if(net==='copy'){if(navigator.clipboard)navigator.clipboard.writeText(full).then(function(){sm.textContent='Texte + lien copies dans le presse-papier !';});}
+  });});
   $('#dlTemplate').addEventListener('click',function(){download('modele-inventaire-FBA.csv','SKU,ASIN,Marketplace,Volume_unit,Unites,Anciennete_j,Ventes_mois\nMON-SKU-01,B0XXXXXXXX,EU,0.02,120,95,30\n');});
   $('#dlResults').addEventListener('click',function(){download('diagnostic-cubed.csv',toCSV());});
   $('#csvFile').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();
