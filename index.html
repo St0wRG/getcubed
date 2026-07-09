@@ -121,6 +121,10 @@
   .del{background:none;color:var(--faint);padding:6px 10px;font-size:16px;line-height:1;border-radius:6px;}
   .del:hover{color:var(--liq);background:var(--liq-bg);}
   .hint{font-size:12px;color:var(--muted);margin:11px 2px 0;line-height:1.5;}
+  .ex-banner{display:none;}
+  .ex-banner.show{display:flex;align-items:center;gap:10px;justify-content:space-between;background:#fdf4e1;border:1px solid #ecd9ab;border-left:4px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:13px;font-size:13px;color:#7a5a12;}
+  .ex-banner b{color:#5a4310;}
+  .ex-banner button{flex:0 0 auto;background:var(--amber);color:#3a2a05;font-weight:700;border-radius:8px;padding:6px 12px;font-size:12.5px;}
 
   /* ---- Result rail ---- */
   .result{background:radial-gradient(120% 90% at 90% 0%, #0e4735 0%, var(--pine-dd) 60%);color:#eaf1ec;border-radius:16px;position:sticky;top:16px;overflow:hidden;box-shadow:0 18px 40px -22px rgba(8,42,32,.7);}
@@ -331,6 +335,7 @@
           <button class="btn-ghost" id="clearAll">Tout effacer</button>
         </div>
         <div id="mapping" style="display:none;"></div>
+        <div id="exBanner" class="ex-banner"><span>&#128075; <b>Donnees d'exemple</b> pour vous montrer comment ca marche. Effacez-les et entrez vos references.</span><button id="exClear" type="button">Entrer mes chiffres</button></div>
         <div class="grid-wrap">
           <table id="gridTable">
             <thead><tr>
@@ -403,6 +408,7 @@
     <div class="export">
       <button class="btn-ghost" onclick="window.print()">Imprimer / PDF</button>
       <button class="btn-ghost" id="dlResults">Telecharger le detail (CSV)</button>
+      <button class="btn-ghost" id="shareBtn">Partager mon resultat</button>
     </div>
   </div>
 
@@ -509,6 +515,8 @@
   function fmtMoney(v,cur){var s=Math.round(v||0).toLocaleString('fr-FR');return cur==='EUR'?(s+' €'):('$'+s);}
   function fmtN(v,dec){return (v||0).toLocaleString('fr-FR',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0});}
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function showExBanner(){var b=document.getElementById('exBanner');if(b)b.classList.add('show');}
+  function hideExBanner(){var b=document.getElementById('exBanner');if(b)b.classList.remove('show');}
 
   function animate(el,to,cur){
     var from=parseFloat(el.getAttribute('data-v')||'0');el.setAttribute('data-v',to);
@@ -611,7 +619,7 @@
     {sku:'EU-SURPLUS',asin:'B0EXEU0001',mkt:'EU',vol:0.02,units:250,age:120,sales:60},
     {sku:'EU-OLD',asin:'B0EXEU0002',mkt:'EU',vol:0.05,units:100,age:400,sales:5},
     {sku:'EU-OK',asin:'B0EXEU0003',mkt:'EU',vol:0.03,units:90,age:60,sales:30}];
-  function loadExamples(){grid.innerHTML='';EXAMPLES.forEach(createRow);render();}
+  function loadExamples(){grid.innerHTML='';EXAMPLES.forEach(createRow);render();showExBanner();}
 
   function detectDelim(line){var c={',':0,';':0,'\t':0};for(var i=0;i<line.length;i++)if(c[line[i]]!=null)c[line[i]]++;var b=',',m=-1;for(var d in c)if(c[d]>m){m=c[d];b=d;}return b;}
   function parseCSV(text){text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();if(!text)return{headers:[],rows:[]};
@@ -662,10 +670,22 @@
   (function(){var target=new Date(2026,9,1),now=new Date();var days=Math.max(0,Math.ceil((target-now)/86400000));
     $('#countdown').textContent='J-'+days;})();
 
-  document.addEventListener('input',function(e){if(e.target.closest('#gridTable')||e.target.closest('.params'))render();});
-  $('#addRow').addEventListener('click',function(){createRow({});});
+  document.addEventListener('input',function(e){if(e.target.closest('#gridTable')){hideExBanner();render();}else if(e.target.closest('.params'))render();});
+  $('#addRow').addEventListener('click',function(){hideExBanner();createRow({});});
   $('#loadEx').addEventListener('click',loadExamples);
-  $('#clearAll').addEventListener('click',function(){grid.innerHTML='';createRow({});render();});
+  function clearGrid(){grid.innerHTML='';createRow({});hideExBanner();render();}
+  $('#clearAll').addEventListener('click',clearGrid);
+  $('#exClear').addEventListener('click',clearGrid);
+  $('#shareBtn').addEventListener('click',function(){
+    var t=window.FBA.totals||{},av=[];
+    if(t.USD&&t.USD.av>0)av.push(fmtMoney(t.USD.av,'USD'));
+    if(t.EUR&&t.EUR.av>0)av.push(fmtMoney(t.EUR.av,'EUR'));
+    var amt=av.join(' + ');
+    var msg=amt?('Je peux eviter '+amt+' de frais de stockage FBA ce trimestre. Calcule les tiens (gratuit, dans ton navigateur) :'):('Calcule tes frais de stockage FBA evitables avant le 1er octobre (gratuit) :');
+    var url='https://getcubed.netlify.app';var b=this;
+    if(navigator.share){navigator.share({title:'Cubed',text:msg,url:url}).catch(function(){});}
+    else if(navigator.clipboard){navigator.clipboard.writeText(msg+' '+url).then(function(){var o=b.textContent;b.textContent='Copie ! Collez-le ou vous voulez';setTimeout(function(){b.textContent=o;},2000);});}
+  });
   $('#dlTemplate').addEventListener('click',function(){download('modele-inventaire-FBA.csv','SKU,ASIN,Marketplace,Volume_unit,Unites,Anciennete_j,Ventes_mois\nMON-SKU-01,B0XXXXXXXX,EU,0.02,120,95,30\n');});
   $('#dlResults').addEventListener('click',function(){download('diagnostic-cubed.csv',toCSV());});
   $('#csvFile').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();
@@ -693,7 +713,7 @@
   }else{document.querySelectorAll('.sreveal').forEach(function(el){el.classList.add('in');});}
 
   window.FBA={compute:compute,parseCSV:parseCSV,guessMap:guessMap,loadExamples:loadExamples,params:P,state:[],totals:{}};
-  createRow({});createRow({});createRow({});render();
+  loadExamples();
   setTimeout(function(){document.querySelectorAll('.reveal').forEach(function(e){e.style.opacity='1';});},1600);
 })();
 </script>
