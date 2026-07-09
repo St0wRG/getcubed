@@ -12,9 +12,13 @@
 <meta property="og:title" content="Cubed - calculez vos frais de stockage FBA evitables">
 <meta property="og:description" content="Chargez votre inventaire, voyez le surcout de stockage Amazon FBA que vous pouvez encore eviter avant le 1er octobre. Gratuit, 100% dans votre navigateur.">
 <meta property="og:url" content="https://getcubed.netlify.app/">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://getcubed.netlify.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Cubed - frais de stockage FBA evitables">
 <meta name="twitter:description" content="Voyez le surcout de stockage Amazon FBA evitable avant le 1er octobre. Gratuit, dans votre navigateur.">
+<meta name="twitter:image" content="https://getcubed.netlify.app/og.png">
 <style>
   :root{
     --pine:#0F5C46; --pine-d:#0B3B2E; --pine-dd:#082A20;
@@ -371,7 +375,7 @@
           <div class="bar"><span class="seg liq" id="sgLiq"></span><span class="seg red" id="sgRed"></span><span class="seg sur" id="sgSur"></span><span class="seg con" id="sgCon"></span></div>
           <div class="lg"><span><i style="background:var(--liq)"></i>Liquider</span><span><i style="background:var(--amber)"></i>Reduire</span><span><i style="background:#b3a24a"></i>Surveiller</span><span><i style="background:#2f9e77"></i>Conserver</span></div>
         </div>
-        <div class="cta"><button class="btn-amber" id="goCapture">Recevoir mon plan d'action</button></div>
+        <div class="cta"><button class="btn-amber" id="goCapture">Etre alerte avant les echeances</button></div>
         <p class="foot-priv">Vos donnees d'inventaire ne quittent jamais cette page.</p>
       </div>
     </aside>
@@ -406,13 +410,13 @@
   <section class="capture sreveal" id="capture">
     <div class="spark"></div>
     <div class="in">
-      <h2>Recevez votre plan d'action et les rappels</h2>
-      <p>On vous envoie le recap chiffre et un rappel avant chaque 14 du mois et avant le 1er octobre. Votre inventaire, lui, reste dans votre navigateur : on ne recoit que l'adresse que vous nous confiez.</p>
+      <h2>Ne ratez aucune echeance</h2>
+      <p>Votre plan est deja affiche ci-dessus : imprimez-le ou exportez-le en CSV. Laissez votre email et on vous previent avant chaque 14 du mois et avant le 1er octobre, pour ne pas payer inutilement. Votre inventaire, lui, reste dans votre navigateur.</p>
       <form id="leadForm" name="cubed-leads" method="POST" data-netlify="true" netlify-honeypot="bot-field" data-ready="true" data-endpoint="/">
         <input type="hidden" name="bot-field">
         <input type="hidden" name="form-name" value="cubed-leads">
         <input type="email" name="email" id="leadEmail" placeholder="vous@votremarque.com" autocomplete="email" required>
-        <button type="submit" class="btn-amber">Recevoir mon plan</button>
+        <button type="submit" class="btn-amber">M'alerter</button>
       </form>
       <div class="msg" id="leadMsg" role="status"></div>
       <p class="note">Pas de spam. Desabonnement en un clic.</p>
@@ -665,7 +669,7 @@
     if(ready&&endpoint){
       var data=new URLSearchParams();data.append('form-name','cubed-leads');data.append('email',email);
       fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()})
-        .then(function(r){if(!r.ok)throw 0;msg.className='msg ok';msg.textContent='C\'est note. Votre plan et les rappels arrivent par email.';form.reset();})
+        .then(function(r){if(!r.ok)throw 0;msg.className='msg ok';msg.textContent='C\'est note ! On vous previent avant chaque echeance. Votre plan est deja a l\'ecran : imprimez-le ou exportez-le.';form.reset();})
         .catch(function(){msg.className='msg err';msg.textContent='Envoi impossible pour le moment. Reessayez dans un instant.';});
     }else{
       msg.className='msg ok';msg.textContent='Adresse valide. Le formulaire s\'activera une fois connecte a votre outil d\'emailing (voir README).';
