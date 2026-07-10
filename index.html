@@ -734,6 +734,10 @@
 
   window.FBA={compute:compute,parseCSV:parseCSV,guessMap:guessMap,loadExamples:loadExamples,params:P,state:[],totals:{}};
   loadExamples();
+
+  // Comptage de visite anonyme (aucun cookie, aucune donnee personnelle) — voir /confidentialite.html
+  try{var src=new URLSearchParams(location.search).get('s')||'direct';var hu='/api/hit?s='+encodeURIComponent(src);
+    if(navigator.sendBeacon){navigator.sendBeacon(hu);}else{fetch(hu,{keepalive:true}).catch(function(){});}}catch(e){}
   setTimeout(function(){document.querySelectorAll('.reveal').forEach(function(e){e.style.opacity='1';});},1600);
 })();
 </script>
