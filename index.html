@@ -234,7 +234,7 @@
   .foot a{color:var(--muted);text-decoration:underline;}
   .print-head{display:none;}
 
-  @media(max-width:900px){.app{grid-template-columns:1fr;}.result{position:static;}}
+  @media(max-width:900px){.app{grid-template-columns:1fr;}.result{position:relative;top:auto;}} /* relative (pas static) : garde le clipping du .spark absolu (sinon 40px de scroll horizontal) */
   @media(max-width:820px){.herogrid{grid-template-columns:1fr;}.hero-art{display:none;}}
   @media(max-width:560px){.params-grid{grid-template-columns:1fr;}.hero h1{max-width:none;}.tops .row{grid-template-columns:96px 1fr 76px;}}
   @media(prefers-reduced-motion:reduce){
